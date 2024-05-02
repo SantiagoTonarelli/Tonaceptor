@@ -1,0 +1,44 @@
+version: '3.8'
+services:
+  server:
+    build: ./interceptor-api
+    ports:
+      - "1891:1891"
+    volumes:
+      - type: bind
+        source: ./interceptor-api/src
+        target: /usr/src/api/src
+      - /usr/src/api/node_modules
+    environment:
+      MONGO_URI: "mongodb://mongo:27017/interceptor-db"
+      PORT: 1891
+    depends_on:
+      - mongo
+      
+  client:
+    build: ./interceptor-web-app
+    ports:
+      - "1949:1949"
+    volumes:
+      - type: bind
+        source: ./interceptor-web-app/src
+        target: /usr/src/web-app/src
+      - /usr/src/web-app/node_modules
+    environment:
+      MONGO_URI: "mongodb://mongo:27017/interceptor-db"
+      REACT_APP_SERVER_URL: "http://localhost:1891"
+      PORT: 1949
+    depends_on:
+      - server
+
+  mongo:
+    image: mongo
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: interceptor-db
+    volumes:
+      - mongodata:/data/db
+
+volumes:
+  mongodata:
